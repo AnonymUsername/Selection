@@ -1,0 +1,553 @@
+#!/usr/bin/env python
+
+
+
+from flask import Blueprint
+
+from flask import Flask, url_for, json
+
+from flask import Response
+
+from flask import request
+
+from flask import jsonify, make_response
+
+from flask_restful import reqparse
+
+
+
+from random import randint
+
+
+
+from itertools import cycle
+
+import requests
+
+import numpy as np
+
+
+
+import snakes.plugins
+
+import snakes.pnml
+
+snakes.plugins.load('gv', 'snakes.nets', 'nets')
+
+from nets import *
+
+import itertools
+
+import json 
+
+import time
+
+import resource
+
+
+
+discovery = Blueprint('discovery', __name__,)
+
+
+
+
+
+@discovery.route('/resource/discovery', methods=["POST"])
+
+def postRequest():
+
+	global req; 
+
+	req = request.get_json()
+
+	discovered = disc_bfs()
+
+	time_start = time.time()
+
+	#OpSet = ['fdc1', 'fpre1']
+
+	#OpSet = ['fdc1', 'fpre1', 'fpre2']
+
+	#OpSet = ['fdc1', 'fpre1', 'fpre2', 'fad1']
+
+	OpSet = ['fdc1', 'fpre1', 'fpre2', 'fad1', 'fad6']
+
+	#OpSet = ['fdc1', 'fpre1', 'fpre2', 'fad1', 'fad6', 'fad7']
+
+	#OpSet = ['fdc1', 'fpre1', 'fpre2', 'fpre3', 'fpre4', 'fad1']
+
+	allResCom (OpSet, discovered)
+
+	time_elapsed = (time.time() - time_start)*1000
+
+	print ('time ', time_elapsed)
+
+	return 'ok'
+
+
+
+def allResCom(OpSet, discovered):
+
+	#OpOrder = [['fdc1', 'fpre1']]
+
+	#OpOrder = [['fdc1', 'fpre1'], ['fpre1', 'fpre2']]
+
+	#OpOrder = [['fdc1', 'fpre1'], ['fpre1', 'fpre2'], ['fpre2', 'fad1']]
+
+	OpOrder = [['fdc1', 'fpre1'], ['fpre1', 'fpre2'], ['fpre2', 'fad1'], ['fad1', 'fad6']]
+
+	#OpOrder = [['fdc1', 'fpre1'], ['fpre1', 'fpre2'], ['fpre2', 'fad1'], ['fad1', 'fad6'], ['fad6', 'fad7']]
+
+	#OpOrder = [['fdc1', 'fpre1'], ['fdc1', 'fpre3'], ['fpre1', 'fpre2'], ['fpre3', 'fpre4'], ['fpre2', 'fad1'], ['fpre4', 'fad1']]
+
+	#OpOrder = [['fdc1', 'fpre1'], ['fdc1', 'fpre3'], ['fpre1', 'fpre2'], ['fpre3', 'fpre4'], ['fpre2', 'fad1'], ['fpre4', 'fad1']]
+
+	arrServGr1 = []
+
+	arrServGr2 = []
+
+	arrServGr3 = []
+
+	arrServGr4 = []
+
+	arrServGr5 = []
+
+	arrServGr6 = []
+
+	arrServGr7 = []
+
+	arrServGr8 = []
+
+	resourceCompositions = []
+
+	for op in range(len(OpSet)):
+
+		print (OpSet[op])
+
+		arrServ = []
+
+		arr = []
+
+		count = 0
+
+		for res in range(len(discovered)):
+
+			if OpSet[op] == discovered[res][0]:
+
+				arrServ.append(str(discovered[res][1]))
+
+				arr.append(discovered[res])
+
+				count = count + 1 
+
+				if count == 5:
+
+					if str(OpSet[op]) == 'fdc1':
+
+						arrServGr1.append(arrServ)
+
+						for j in range(len(arr)):
+
+							discovered.remove(arr[j])
+
+						break
+
+					if str(OpSet[op]) == 'fpre1':
+
+						arrServGr2.append(arrServ)
+
+						for j in range(len(arr)):
+
+							discovered.remove(arr[j])
+
+						break
+
+					if str(OpSet[op]) == 'fpre2':
+
+						arrServGr3.append(arrServ)
+
+						for j in range(len(arr)):
+
+							discovered.remove(arr[j])
+
+						break
+
+					#if str(OpSet[op]) == 'fpre3':
+
+						#arrServGr4.append(arrServ)
+
+						#for j in range(len(arr)):
+
+							#discovered.remove(arr[j])
+
+						#break
+
+					#if str(OpSet[op]) == 'fpre4':
+
+						#arrServGr5.append(arrServ)
+
+						#for j in range(len(arr)):
+
+							#discovered.remove(arr[j])
+
+						#break
+
+					if str(OpSet[op]) == 'fad1':
+
+						arrServGr6.append(arrServ)
+
+						for j in range(len(arr)):
+
+							discovered.remove(arr[j])
+
+						break
+
+					if str(OpSet[op]) == 'fad6':
+
+						arrServGr7.append(arrServ)
+
+						for j in range(len(arr)):
+
+							discovered.remove(arr[j])
+
+						break
+
+					#if str(OpSet[op]) == 'fad7':
+
+						#arrServGr8.append(arrServ)
+
+						#for j in range(len(arr)):
+
+							#discovered.remove(arr[j])
+
+						#break
+
+	a = np.concatenate(arrServGr1, axis=0)
+
+	b = np.concatenate(arrServGr2, axis=0)
+
+	c = np.concatenate(arrServGr3, axis=0)
+
+	#d = np.concatenate(arrServGr4, axis=0)
+
+	#e = np.concatenate(arrServGr5, axis=0)
+
+	f = np.concatenate(arrServGr6, axis=0)
+
+	g = np.concatenate(arrServGr7, axis=0)
+
+	#h = np.concatenate(arrServGr8, axis=0)
+
+	a.sort()
+
+	b.sort()
+
+	c.sort()
+
+	#d.sort()
+
+	#e.sort()
+
+	f.sort()
+
+	g.sort()
+	#h.sort()
+
+	
+
+	suitRC = []
+
+	noteli = []
+
+	
+
+	C=[[0,100], [0,100], [0,100]]  #Availability, Cost and Usage
+
+	avgQ=0
+
+	#r=70
+
+
+
+	for i in range(len(C)):
+
+		if i==0 or i==2:
+
+			avgQ=avgQ + (((C[i][0] + C[i][1])/2)/100.0)
+
+		if i==1:
+
+			avgQ=avgQ + ((100 - ((C[i][0] + C[i][1])/2))/100.0 )
+
+	#T = (((avgQ*6)+6)*r)/100.0
+
+	T=0
+
+	headers = {'dataType': 'json', 'Content-Type' : 'application/json'}
+
+	for rc in itertools.product(a, b, c, f, g):
+
+		eli = []
+
+		for r in rc:
+
+			if r in noteli:
+
+				break
+
+			else:
+
+				var = "true"
+
+				resp = requests.head(r)
+
+				descriptor = requests.get(resp.headers['Link'], headers=headers).text
+
+				js = json.loads(descriptor)
+
+				for k in js['Operation']:
+
+					jsqor = k['QoS']
+
+					if ( (int(jsqor[1].values()[0]) >=C[0][0] and int(jsqor[1].values()[0]) <= C[0][1]) and (int(jsqor[2].values()[0]) >=C[1][0] and int(jsqor[2].values()[0]) <= C[1][1]) and (int(jsqor[3].values()[0]) >=C[2][0] and int(jsqor[3].values()[0]) <= C[2][1]) ):
+
+						norq0 = int(jsqor[1].values()[0]) / 100.0
+
+						norq1 = (100 -  int(jsqor[2].values()[0])) / 100.0
+
+						norq2 = int(jsqor[3].values()[0]) / 100.0
+
+						score = norq0 + norq1 +norq2
+
+						eli.append([r, k['functionality'], score, int(jsqor[0].values()[0])])
+
+						print(eli)
+
+					else:
+
+						var = "False"
+
+						noteli.append(r)
+
+						break 
+
+				if (var == "False"):
+
+					break
+
+		if len(eli) == 5:
+
+			simScore = 0
+
+			for op in range(len(OpOrder)):
+
+				for e in range(len(eli)):
+
+					if OpOrder[op][0]==eli[e][1]:
+
+						res1 = eli[e][0]
+
+					if OpOrder[op][1]==eli[e][1]:
+
+						res2 = eli[e][0]
+
+				resp1 = requests.head(res1)
+
+				resp2 = requests.head(res2)
+
+				descriptor1 = requests.get(resp1.headers['Link'], headers=headers).text
+
+				jsd1 = json.loads(descriptor1)
+
+				descriptor2 = requests.get(resp2.headers['Link'], headers=headers).text
+
+				jsd2 = json.loads(descriptor2)
+
+				for o in jsd1['Operation']:
+
+					if o['functionality'] == OpOrder[op][0]:
+
+						for o2 in jsd2['Operation']:
+
+							if o2['functionality'] == OpOrder[op][1]:
+
+								for ret in o['returns']:
+
+										for exp in o2['expects']:
+
+											if (ret==exp):
+
+												simScore = simScore + 1
+
+			scorest = 0
+
+			staticnumber = 0
+
+			for e in range(len(eli)):
+
+				scorest = scorest + eli[e][2]
+
+				staticnumber = staticnumber + eli[e][3]
+
+			rcscore = simScore + scorest
+
+			if rcscore >= T and staticnumber==0: 
+
+				print (eli)
+
+				print (staticnumber)
+
+				suitRC.append([rc, rcscore])  
+
+				print (rc)
+
+				break
+
+	print (suitRC)
+
+	return 'ok'
+
+
+
+	
+
+def disc_bfs():
+
+	node_number = 0
+
+	headers = {'dataType': 'json', 'Content-Type' : 'application/json'}
+
+	data = json.dumps(req)
+
+	d = json.loads(data)
+
+	discovered = []
+
+	visited = []
+
+	operations_array = []
+
+	operations_url = []
+
+	bfsQueue = []
+
+	current_position=0
+
+	init_node = 0
+
+	for item in d['operations']:
+
+		operations_array.append(item)
+
+
+
+	for u in d['url']:
+
+		operations_url.append(u)
+
+	
+
+	t = 0
+
+	init_node1 = len(operations_url)
+
+	leng = len(operations_array)
+
+	length = 0
+
+	currentlink = operations_url[init_node]
+
+	bfsQueue.append(operations_url[init_node])
+
+	while t<init_node1:
+
+		while bfsQueue:
+
+			if (currentlink not in visited):
+
+				node_number = node_number + 1
+
+				visited.append(currentlink)
+
+				resp = requests.head(currentlink)
+
+				descriptor = requests.get(resp.headers['Link'], headers=headers).text
+
+				js = json.loads(descriptor)
+
+				for f in js['Operation']:
+
+					for j in range(len(operations_array)):
+
+						if (operations_array[j] == f['functionality']):
+
+							if 'Collection' in js:
+
+								for r in js['Collection']['member']:
+
+									node_number = node_number + 1
+
+									discovered.append([operations_array[j], r['@id']])
+
+								break 
+
+							else:
+
+								discovered.append([operations_array[j], currentlink])
+
+				if 'Link' in js:
+
+					for l in js['Link']:
+
+						if ("isComplementary" == l['relationType'] and l['@id'] not in visited and l['@id'] not in bfsQueue):
+
+							bfsQueue.append(l['@id'])
+
+						if ("isSimilar" == l['relationType'] and l['@id'] not in visited and l['@id'] not in bfsQueue):
+
+							bfsQueue.append(l['@id'])
+
+				current_position = current_position + 1
+
+				if current_position < len(bfsQueue):
+
+					currentlink = bfsQueue[current_position]
+
+				if current_position >= len(bfsQueue):
+
+					del bfsQueue[:]
+
+			else:
+
+				current_position = current_position + 1
+
+				if current_position < len(bfsQueue):
+
+					currentlink = bfsQueue[current_position]
+
+				if current_position >=  len(bfsQueue):
+
+					del bfsQueue[:]
+
+		t=t+1
+
+		del bfsQueue[:]
+
+		if t < len(operations_url):
+
+			currentlink = operations_url[t]
+
+			bfsQueue.append(operations_url[t])
+
+	print (discovered)
+
+	return discovered
+
+
+
+
+
+
+
+
+
